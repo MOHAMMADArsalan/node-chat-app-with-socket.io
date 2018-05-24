@@ -5,9 +5,22 @@ socket.on('connect', function () {
 })
 
 socket.on("newMessage", function (message) {
-    console.log('====================================');
-    console.log(message);
-    console.log('====================================');
+    const li = jQuery("<li></li>");
+    li.text(`${message.from}: ${message.text}`);
+    jQuery("#messages").append(li);
+})
+
+
+
+
+jQuery('#message-form').on("submit", function (e) {
+    e.preventDefault();
+    socket.emit("createMessage", {
+        from: "Arsalan",
+        text: jQuery('#message').val()
+    }, function (data) {
+        console.log(data)
+    })
 })
 
 socket.on('disconnect', function () {
