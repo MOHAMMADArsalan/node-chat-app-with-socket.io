@@ -5,21 +5,27 @@ socket.on('connect', function () {
 })
 
 socket.on("newMessage", function (message) {
+
+    const template = jQuery('#message-template').html();
     const formatedTime = moment(message.createdAt).format("h:mm a");
-    const li = jQuery("<li></li>");
-    li.text(`${message.from} ${formatedTime}: ${message.text}`);
-    jQuery("#messages").append(li);
+    const html = Mustache.render(template, {
+        text: message.text,
+        from: message.from,
+        createdAt: formatedTime
+    });
+
+    jQuery("#messages").append(html);
 })
 
 socket.on("newLocationMessage", function (message) {
+    const locationTemplate = jQuery("#location-message-template").html();
     const formatedTime = moment(message.createdAt).format("h:mm a");
-    
-    const li = jQuery("<li></li>");
-    const a = jQuery('<a target="_blank">My Current Location</a>');
-    li.text(`${message.from} ${formatedTime}: `);
-    a.attr("href", message.url);
-    li.append(a);
-    jQuery("#messages").append(li);
+    const html = Mustache.render(locationTemplate, {
+        from: message.from,
+        createdAt: formatedTime,
+        url: message.url
+    })
+    jQuery("#messages").append(html);
 })
 
 
