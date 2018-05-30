@@ -1,9 +1,47 @@
 var socket = io();
 
+function scrollToBottom() {
+    // messages 
+    const messages = jQuery("#messages");
+    const newMessage = jQuery("#messages li:last-child");
+    // Heights
+
+    const clientHeight = messages.prop("clientHeight");
+    const scrollTop = messages.prop("scrollTop");
+    const scrollHeight = messages.prop("scrollHeight");
+    const newMessageInnerHeight = newMessage.innerHeight();
+    const lastMessageInnerHeight = newMessage.prev().innerHeight();
+    if ((clientHeight + scrollTop + newMessageInnerHeight + lastMessageInnerHeight) >= scrollHeight) {
+        messages.scrollTop(scrollHeight)
+    }
+}
 socket.on('connect', function () {
-    console.log('connected to server');
+    const params = jQuery.deparam(window.location.search);
+    socket.emit("join", params, function (err) {
+        if (err) {
+            alert(err);
+            window.location.href = "/";
+        } else {
+            console.log("no error")
+        }
+    })
+
+})
+socket.on('disconnect', function () {
+    console.log('disconnected to server');
 })
 
+socket.on("updateUserList", function (users) {
+    console.log(users)
+    const ol = jQuery("<ol></ol>");
+
+
+    users.forEach(function (user) {
+        ol.append(jQuery("<li></li>").text(user))
+    })
+
+    jQuery("#users").html(ol)
+})
 socket.on("newMessage", function (message) {
 
     const template = jQuery('#message-template').html();
@@ -15,6 +53,7 @@ socket.on("newMessage", function (message) {
     });
 
     jQuery("#messages").append(html);
+    scrollToBottom()
 })
 
 socket.on("newLocationMessage", function (message) {
@@ -26,6 +65,8 @@ socket.on("newLocationMessage", function (message) {
         url: message.url
     })
     jQuery("#messages").append(html);
+    scrollToBottom()
+
 })
 
 
@@ -33,7 +74,6 @@ jQuery('#message-form').on("submit", function (e) {
     e.preventDefault();
     const messageTextBox = jQuery('#message');
     socket.emit("createMessage", {
-        from: "Arsalan",
         text: messageTextBox.val()
     }, function (data) {
         messageTextBox.val('')
@@ -57,7 +97,5 @@ locationButton.on("click", function () {
         locationButton.removeAttr("disabled").text("Send location")
         alert("Unable to fetch location")
     })
-})
-socket.on('disconnect', function () {
-    console.log('disconnected to server');
-})
+});
+
